@@ -116,6 +116,11 @@
   methods.forEach(function (item) {
     ArrayMethods[item] = function () {
       console.log('劫持数组');
+      // 将方法内部的"this"指向当前的数组对象，并传入args作为参数
+      /**
+       * oldArrayProtoMethods[item]=arr.push(arr) 
+       * 所以得需要绑定this
+       */
       for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
         args[_key] = arguments[_key];
       }
@@ -143,7 +148,9 @@
         // 处理数组
         // 将value的原型指向ArrayMethods
         value.__proto__ = ArrayMethods;
-        console.log('数组');
+        // console.log(value)
+        // 如果你是数组对象
+        this.observerArray(value); // 数组对象劫持
       } else {
         // 处理对象
         this.walk(value); // 遍历
@@ -168,6 +175,14 @@
             key = _Object$entries$_i[0],
             value = _Object$entries$_i[1];
           definedReactive(data, key, value);
+        }
+      }
+    }, {
+      key: "observerArray",
+      value: function observerArray(value) {
+        // [{a:1}]
+        for (var i = 0; i < value.length; i++) {
+          observer(value[i]);
         }
       }
     }]);

@@ -20,7 +20,9 @@ class Observer{
             // 处理数组
             // 将value的原型指向ArrayMethods
             value.__proto__ = ArrayMethods
-            console.log('数组')
+            // console.log(value)
+            // 如果你是数组对象
+            this.observerArray(value) // 数组对象劫持
         }else {
             // 处理对象
             this.walk(value)  // 遍历
@@ -42,6 +44,13 @@ class Observer{
             definedReactive(data,key,value)
         }
     }
+
+    observerArray(value){  // [{a:1}]
+         for(let i=0;i<value.length;i++) {
+            observer(value[i])
+         }
+    }
+
 }
 // 对 对象中的属性进行劫持
 function definedReactive(data,key,value) {
