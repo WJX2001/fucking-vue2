@@ -298,5 +298,125 @@ function definedReactive(data,key,value) {
 // 3、递归 get    set
 ```
 
+## 3 对data中数组使用函数方法劫持
+
+在`src/observer/index.js`中进行判断，如果是数组，就交给数组处理部分处理
+
+```js
+import { ArrayMethods } from "./arr"
+
+export function observer(data) {
+    // console.log(data)
+    // TODO: (1) 对象的处理 vue2
+    // 判断
+    if( typeof data != 'object' || data === null){
+        return data
+    }
+    // 通过一个类进行劫持
+    return new Observer(data)
+
+}
+
+class Observer{
+    constructor(value) {
+        console.log(value)
+        // 判断数据是数组还是对象
+        if(Array.isArray(value)){
+            // 处理数组
+            // 将value的原型指向ArrayMethods
+            value.__proto__ = ArrayMethods
+            console.log('数组')
+        }else {
+            // 处理对象
+            this.walk(value)  // 遍历
+        }
+       
+    }
+    walk(data) {  // { msg: 'hello' }
+        // 原始写法
+        // let keys = Object.keys(data)
+        // for(let i=0;i<keys.length;i++) {
+        //     // 对我们的每个属性进行劫持
+        //     let key = keys[i]
+        //     let value = data[key]
+        //     definedReactive(data,key,value)
+        // }
+
+        // Es6写法
+        for(let [key,value] of Object.entries(data)){
+            definedReactive(data,key,value)
+        }
+    }
+}
+// 对 对象中的属性进行劫持
+function definedReactive(data,key,value) {
+    observer(value) // 深度代理
+    Object.defineProperty(data,key,{
+        // 获取的时候触发
+        get() {
+            // console.log('获取的时候触发')
+            return value  // 返回值
+        },
+        set(newValue) {
+            // console.log('设置的时候触发')
+            if(newValue === value) return value
+            observer(newValue)  // 如果用户设置的值是对象
+            value = newValue    
+        }
+    })
+}
+
+
+// vue2 object.defineProperty 缺点：对象中的一个属性  {a:1,b:2}
+
+// {a:{},list:[]}
+
+// 总结：1) 对象
+// 1、vue2 object.defineProperty 有缺点，只能对对象中的一个属性进行劫持 
+// 2、遍历{a:1,b:2,obj:{}}
+// 3、递归 get    set
+
+
+// 数组 {list: [1,2,3,4],arr:[{a:1}]}
+// 方法函数劫持，劫持数组方法 通过 arr.push()
+```
+
+在`src/observer/arr.js`中进行进行数组处理，
+
+```js
+// 重写数组
+// 1. 获取原来的数组方法
+let  oldArrayProtoMethods = Array.prototype
+
+// 2. 继承数组的方法
+    /**
+     * 使用Object.create() 方法创建一个新对象，并将这个新对象的原型设置为oldArrayProtoMethods
+     */
+export let ArrayMethods = Object.create(oldArrayProtoMethods)
+
+// 3.劫持数组的方法
+let methods = [
+    "push",
+    "pop",
+    "unshift",
+    "shift",
+    "splice"
+]
+
+// 通过遍历methods数组中的每个方法名，将对应的函数重新定义ArrayMethods
+methods.forEach(item => {
+    ArrayMethods[item]  = function(...args){
+        console.log('劫持数组')
+        // 将方法内部的"this"指向当前的数组对象，并传入args作为参数
+            /**
+             * oldArrayProtoMethods[item]=arr.push(arr) 
+             * 所以得需要绑定this
+             */
+       let result =  oldArrayProtoMethods[item].apply(this,args)
+       return result
+    }
+})
+```
+
 
 
