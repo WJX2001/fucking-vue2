@@ -1,5 +1,7 @@
+import { ArrayMethods } from "./arr"
+
 export function observer(data) {
-    console.log(data)
+    // console.log(data)
     // TODO: (1) 对象的处理 vue2
     // 判断
     if( typeof data != 'object' || data === null){
@@ -12,7 +14,18 @@ export function observer(data) {
 
 class Observer{
     constructor(value) {
-        this.walk(value)  // 遍历
+        console.log(value)
+        // 判断数据是数组还是对象
+        if(Array.isArray(value)){
+            // 处理数组
+            // 将value的原型指向ArrayMethods
+            value.__proto__ = ArrayMethods
+            console.log('数组')
+        }else {
+            // 处理对象
+            this.walk(value)  // 遍历
+        }
+       
     }
     walk(data) {  // { msg: 'hello' }
         // 原始写法
@@ -36,11 +49,11 @@ function definedReactive(data,key,value) {
     Object.defineProperty(data,key,{
         // 获取的时候触发
         get() {
-            console.log('获取的时候触发')
+            // console.log('获取的时候触发')
             return value  // 返回值
         },
         set(newValue) {
-            console.log('设置的时候触发')
+            // console.log('设置的时候触发')
             if(newValue === value) return value
             observer(newValue)  // 如果用户设置的值是对象
             value = newValue    
@@ -57,3 +70,8 @@ function definedReactive(data,key,value) {
 // 1、vue2 object.defineProperty 有缺点，只能对对象中的一个属性进行劫持 
 // 2、遍历{a:1,b:2,obj:{}}
 // 3、递归 get    set
+
+
+// 数组 {list: [1,2,3,4],arr:[{a:1}]}
+// 方法函数劫持，劫持数组方法 通过 arr.push()
+

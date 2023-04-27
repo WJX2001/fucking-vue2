@@ -22,7 +22,8 @@
             data() {
                 return {
                     msg:'hello',
-                    a:{b:20}
+                    a:{b:20},
+                    list:[1,2,3]
                 }
             }
             // props: {
@@ -33,7 +34,9 @@
         // get 方法测试
         // console.log(vm._data)
         // set 方法测试
-        console.log(vm._data.a={c:30})
+        // console.log(vm._data.a={c:30})
+        // 数组测试
+        console.log(vm._data.list.push(10))
     </script>
 </body>
 </html>

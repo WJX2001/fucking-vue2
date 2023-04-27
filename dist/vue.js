@@ -99,8 +99,33 @@
     return typeof key === "symbol" ? key : String(key);
   }
 
+  // 重写数组
+  // 1. 获取原来的数组方法
+  var oldArrayProtoMethods = Array.prototype;
+
+  // 2. 继承数组的方法
+  /**
+   * 使用Object.create() 方法创建一个新对象，并将这个新对象的原型设置为oldArrayProtoMethods
+   */
+  var ArrayMethods = Object.create(oldArrayProtoMethods);
+
+  // 3.劫持数组的方法
+  var methods = ["push", "pop", "unshift", "shift", "splice"];
+
+  // 通过遍历methods数组中的每个方法名，将对应的函数重新定义ArrayMethods
+  methods.forEach(function (item) {
+    ArrayMethods[item] = function () {
+      console.log('劫持数组');
+      for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+      var result = oldArrayProtoMethods[item].apply(this, args);
+      return result;
+    };
+  });
+
   function observer(data) {
-    console.log(data);
+    // console.log(data)
     // TODO: (1) 对象的处理 vue2
     // 判断
     if (_typeof(data) != 'object' || data === null) {
@@ -112,7 +137,17 @@
   var Observer = /*#__PURE__*/function () {
     function Observer(value) {
       _classCallCheck(this, Observer);
-      this.walk(value); // 遍历
+      console.log(value);
+      // 判断数据是数组还是对象
+      if (Array.isArray(value)) {
+        // 处理数组
+        // 将value的原型指向ArrayMethods
+        value.__proto__ = ArrayMethods;
+        console.log('数组');
+      } else {
+        // 处理对象
+        this.walk(value); // 遍历
+      }
     }
     _createClass(Observer, [{
       key: "walk",
@@ -143,11 +178,11 @@
     Object.defineProperty(data, key, {
       // 获取的时候触发
       get: function get() {
-        console.log('获取的时候触发');
+        // console.log('获取的时候触发')
         return value; // 返回值
       },
       set: function set(newValue) {
-        console.log('设置的时候触发');
+        // console.log('设置的时候触发')
         if (newValue === value) return value;
         observer(newValue); // 如果用户设置的值是对象
         value = newValue;
@@ -163,6 +198,9 @@
   // 1、vue2 object.defineProperty 有缺点，只能对对象中的一个属性进行劫持 
   // 2、遍历{a:1,b:2,obj:{}}
   // 3、递归 get    set
+
+  // 数组 {list: [1,2,3,4],arr:[{a:1}]}
+  // 方法函数劫持，劫持数组方法 通过 arr.push()
 
   function initState(vm) {
     var opts = vm.$options;
