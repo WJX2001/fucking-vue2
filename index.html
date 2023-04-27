@@ -13,16 +13,27 @@
         // 因为用了 umd,所以在window上有个Vue
         // console.log(Vue)
         // 响应式 vue2 mvvm
-        new Vue({
+       let vm =  new Vue({
             el:'#app',  // 编译模板
-            data: {
+            // data: {
 
-            },
-            props: {
+            // },
+            // data还可以写成函数形式
+            data() {
+                return {
+                    msg:'hello',
+                    a:{b:20}
+                }
+            }
+            // props: {
 
-            },
-            watch: {}
+            // },
+            // watch: {}
         })   
+        // get 方法测试
+        // console.log(vm._data)
+        // set 方法测试
+        console.log(vm._data.a={c:30})
     </script>
 </body>
 </html>
