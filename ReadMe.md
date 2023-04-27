@@ -97,5 +97,67 @@ export default Vue
   },
 ```
 
+通过`npm run dev `即可开始工作
+
+# 二、初始化Vue
+
+首先在根目录下的`index.html`下引入打包文件`dist/vue.js`，然后通过new Vue() 来实现给构造函数创建实例对象
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="app"> hello </div>
+    <script src="dist/vue.js"></script>
+    <script>
+        // 因为用了 umd,所以在window上有个Vue
+        // console.log(Vue)
+        // 响应式 vue2 mvvm
+        new Vue({
+            el:'#app',  // 编译模板
+            data: {
+
+            },
+            props: {
+
+            },
+            watch: {}
+        })   
+    </script>
+</body>
+</html>
+```
+
+然后在`src/index.js`中进行初始化处理，创建Vue的构造函数，
+
+```js
+import {initMixin} from './init'
+
+function Vue(options) {
+    // 初始化
+    this._init(options)
+
+}
+initMixin(Vue)
+
+export default Vue
+```
+
+通过initMixin函数定义`_init`方法，并在构造函数`Vue`中调用`_init`方法，创建`src/init.js`
+
+```js
+export function initMixin(Vue) {
+    Vue.prototype._init = function(options) {
+        console.log(options)
+    }
+}
+```
+
 
 
