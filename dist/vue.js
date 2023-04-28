@@ -262,7 +262,22 @@
       vm._data = typeof data === "function" ? data.call(vm) : data; // 注意 this指向问题
       data = vm._data;
       // 数据进行劫持
+      // 将data 上的所有属性代理到实例上 vm {a:1,b:2}
+
+      for (var key in data) {
+        proxy(vm, "_data", key);
+      }
       observer(data);
+    }
+    function proxy(vm, source, key) {
+      Object.defineProperty(vm, key, {
+        get: function get() {
+          return vm[source][key];
+        },
+        set: function set(newValue) {
+          vm[source][key] = newValue;
+        }
+      });
     }
 
     // data{}  (1) 对象 (2) 数组 {a:{b:1},list:[1,2,3],arr:[{}]}
