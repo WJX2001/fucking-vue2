@@ -2,9 +2,10 @@ import { ArrayMethods } from "./arr"
 
 export function observer(data) {
     // console.log(data)
+
     // TODO: (1) 对象的处理 vue2
     // 判断
-    if( typeof data != 'object' || data === null){
+    if (typeof data != 'object' || data === null) {
         return data
     }
     // 通过一个类进行劫持
@@ -12,22 +13,29 @@ export function observer(data) {
 
 }
 
-class Observer{
+class Observer {
     constructor(value) {
-        console.log(value)
+        // 给 data 定义一个属性
+        Object.defineProperty(value, "__ob__", {
+            enumerable: false,
+            value: this
+        })
+
+        // console.log(value)
         // 判断数据是数组还是对象
-        if(Array.isArray(value)){
+        if (Array.isArray(value)) {
             // 处理数组
             // 将value的原型指向ArrayMethods
             value.__proto__ = ArrayMethods
             // console.log(value)
+            // console.log(value)
             // 如果你是数组对象
             this.observerArray(value) // 数组对象劫持
-        }else {
+        } else {
             // 处理对象
             this.walk(value)  // 遍历
         }
-       
+
     }
     walk(data) {  // { msg: 'hello' }
         // 原始写法
@@ -40,22 +48,22 @@ class Observer{
         // }
 
         // Es6写法
-        for(let [key,value] of Object.entries(data)){
-            definedReactive(data,key,value)
+        for (let [key, value] of Object.entries(data)) {
+            definedReactive(data, key, value)
         }
     }
 
-    observerArray(value){  // [{a:1}]
-         for(let i=0;i<value.length;i++) {
+    observerArray(value) {  // [{a:1}]
+        for (let i = 0; i < value.length; i++) {
             observer(value[i])
-         }
+        }
     }
 
 }
 // 对 对象中的属性进行劫持
-function definedReactive(data,key,value) {
+function definedReactive(data, key, value) {
     observer(value) // 深度代理
-    Object.defineProperty(data,key,{
+    Object.defineProperty(data, key, {
         // 获取的时候触发
         get() {
             // console.log('获取的时候触发')
@@ -63,9 +71,9 @@ function definedReactive(data,key,value) {
         },
         set(newValue) {
             // console.log('设置的时候触发')
-            if(newValue === value) return value
+            if (newValue === value) return value
             observer(newValue)  // 如果用户设置的值是对象
-            value = newValue    
+            value = newValue
         }
     })
 }

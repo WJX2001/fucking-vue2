@@ -125,12 +125,31 @@
         args[_key] = arguments[_key];
       }
       var result = oldArrayProtoMethods[item].apply(this, args);
+      console.log(args); // [{b:6}]
+      // 问题： 数组追加对象的情况 arr arr.push({a:1})
+      var inserted;
+      switch (item) {
+        case 'push':
+        case 'unshift':
+          inserted = args;
+          break;
+        case 'splice':
+          inserted = args.splice(2); // arr.splice(0,1,{b:6})  // 除去前面两种方法，所以传参数2
+          break;
+      }
+      console.log(inserted);
+      var ob = this.__ob__;
+      if (inserted) {
+        ob.observerArray(inserted); // 对我们添加的对象进行劫持
+      }
+
       return result;
     };
   });
 
   function observer(data) {
     // console.log(data)
+
     // TODO: (1) 对象的处理 vue2
     // 判断
     if (_typeof(data) != 'object' || data === null) {
@@ -142,12 +161,19 @@
   var Observer = /*#__PURE__*/function () {
     function Observer(value) {
       _classCallCheck(this, Observer);
-      console.log(value);
+      // 给 data 定义一个属性
+      Object.defineProperty(value, "__ob__", {
+        enumerable: false,
+        value: this
+      });
+
+      // console.log(value)
       // 判断数据是数组还是对象
       if (Array.isArray(value)) {
         // 处理数组
         // 将value的原型指向ArrayMethods
         value.__proto__ = ArrayMethods;
+        // console.log(value)
         // console.log(value)
         // 如果你是数组对象
         this.observerArray(value); // 数组对象劫持
@@ -246,7 +272,7 @@
   function initMixin(Vue) {
     // 将 _init 方法添加到 Vue.prototype 中
     Vue.prototype._init = function (options) {
-      // console.log(options)
+      console.log(options);
 
       // 将当前实例赋值给 vm
       var vm = this;
@@ -258,6 +284,7 @@
   }
 
   function Vue(options) {
+    // console.log(options)
     // 初始化
     this._init(options);
   }

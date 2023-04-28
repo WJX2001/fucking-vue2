@@ -4,7 +4,7 @@ import { initState } from "./initState"
 export function initMixin(Vue) {
     // 将 _init 方法添加到 Vue.prototype 中
     Vue.prototype._init = function(options) {
-        // console.log(options)
+        console.log(options)
 
         // 将当前实例赋值给 vm
         let vm = this  
