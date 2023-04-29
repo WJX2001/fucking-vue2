@@ -418,5 +418,113 @@ methods.forEach(item => {
 })
 ```
 
+## 4 对data中数组以及数组对象进行劫持处理
+
+```js
+// 重写数组
+// 1. 获取原来的数组方法
+let oldArrayProtoMethods = Array.prototype
+
+// 2. 继承数组的方法
+/**
+ * 使用Object.create() 方法创建一个新对象，并将这个新对象的原型设置为oldArrayProtoMethods
+ */
+export let ArrayMethods = Object.create(oldArrayProtoMethods)
+
+// 3.劫持数组的方法
+let methods = [
+    "push",
+    "pop",
+    "unshift",
+    "shift",
+    "splice"
+]
+
+// 通过遍历methods数组中的每个方法名，将对应的函数重新定义ArrayMethods
+methods.forEach(item => {
+    ArrayMethods[item] = function (...args) {
+        // console.log('劫持数组')
+        // 将方法内部的"this"指向当前的数组对象，并传入args作为参数
+        /**
+         * oldArrayProtoMethods[item]=arr.push(arr) 
+         * 所以得需要绑定this
+         */
+        let result = oldArrayProtoMethods[item].apply(this, args)
+        // console.log(args)   // [{b:6}]
+        // 问题： 数组追加对象的情况 arr arr.push({a:1})
+        let inserted
+        switch (item) {
+            case 'push':
+            case 'unshift':
+                inserted = args
+                break;
+            case 'splice': 
+                inserted = args.splice(2)   // arr.splice(0,1,{b:6})  // 除去前面两种方法，所以传参数2
+                break;
+            
+        }
+        // console.log(inserted)
+        
+        let ob = this.__ob__ 
+        if(inserted){
+            ob.observerArray(inserted) // 对我们添加的对象进行劫持
+        }
+        return result
+    }
+})
+```
+
+## 5 将data中的属性代理到实例上
+
+在`src/initState.js`中创建
+
+```js
+// data属性  TODO: 对data初始化 
+    function initData(vm) {
+        // console.log('data初始化',vm) // 1. data可能是对象 2.对象可能是函数
+        let data = vm.$options.data
+        vm._data = typeof data === "function" ? data.call(vm):data // 注意 this指向问题
+        data = vm._data  
+        // 数据进行劫持
+        // 将data 上的所有属性代理到实例上 vm {a:1,b:2}
+        
+        for(let key in data){
+            proxy(vm,"_data",key) 
+        }
+        observer(data)
+    }
+```
+
+## 6 获取到html对象
+
+> Vue初次渲染流程：先初始化数据 -> 将模版进行编译 -> 变成render()函数 -> 生成虚拟节点 -> 生成真实的dom -> 放到页面上
+
+**Vue模版编译流程：** 
+
+- vue的模版编译依靠：template，render，el 三个东西，其中el必不可少
+- 编译时，先去查看有没有 render 函数，没有就去找 template，如果也没有，vue通过从`el`选项指定的DOM元素开始编译模版并渲染组件，具体流程如下：
+  - 如果存在`el `选项，则执行`vm.$mount(el)`，即挂在组件到该DOM元素上
+  - 如果不存在`el`选项，则需要手动调用`vm.$mount()`方法挂载组件，这时需要传入一个DOM元素作为挂载点
+
+在`src/init.js`中进行判断
+
+```js
+Vue.prototype.$mount = function (el) {
+        console.log(el)
+        // el template render
+        let vm = this
+        el = document.querySelector(el)  // 获取元素
+        let options = vm.$options
+        if(!options.render) {  // 没有render
+            let template = options.template
+            if(!template && el) {
+                // 获取html
+                el = el.outerHTML
+                console.log(el) // <div id="app"> hello {{ msg }} </div>
+            }  
+        }
+    }
+```
+
 
 

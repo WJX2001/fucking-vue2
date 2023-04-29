@@ -115,17 +115,17 @@
   // 通过遍历methods数组中的每个方法名，将对应的函数重新定义ArrayMethods
   methods.forEach(function (item) {
     ArrayMethods[item] = function () {
-      console.log('劫持数组');
+      for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+      // console.log('劫持数组')
       // 将方法内部的"this"指向当前的数组对象，并传入args作为参数
       /**
        * oldArrayProtoMethods[item]=arr.push(arr) 
        * 所以得需要绑定this
        */
-      for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-        args[_key] = arguments[_key];
-      }
       var result = oldArrayProtoMethods[item].apply(this, args);
-      console.log(args); // [{b:6}]
+      // console.log(args)   // [{b:6}]
       // 问题： 数组追加对象的情况 arr arr.push({a:1})
       var inserted;
       switch (item) {
@@ -137,7 +137,8 @@
           inserted = args.splice(2); // arr.splice(0,1,{b:6})  // 除去前面两种方法，所以传参数2
           break;
       }
-      console.log(inserted);
+      // console.log(inserted)
+
       var ob = this.__ob__;
       if (inserted) {
         ob.observerArray(inserted); // 对我们添加的对象进行劫持
@@ -287,7 +288,7 @@
   function initMixin(Vue) {
     // 将 _init 方法添加到 Vue.prototype 中
     Vue.prototype._init = function (options) {
-      console.log(options);
+      // console.log(options)
 
       // 将当前实例赋值给 vm
       var vm = this;
@@ -295,6 +296,29 @@
       vm.$options = options;
       // 初始化实例状态
       initState(vm);
+
+      // 渲染模版  el
+      if (vm.$options.el) {
+        vm.$mount(vm.$options.el);
+      }
+    };
+
+    // 创建 $mount方法
+    Vue.prototype.$mount = function (el) {
+      console.log(el);
+      // el template render
+      var vm = this;
+      el = document.querySelector(el); // 获取元素
+      var options = vm.$options;
+      if (!options.render) {
+        // 没有render
+        var template = options.template;
+        if (!template && el) {
+          // 获取html
+          el = el.outerHTML;
+          console.log(el);
+        }
+      }
     };
   }
 

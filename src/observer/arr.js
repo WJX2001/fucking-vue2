@@ -20,14 +20,14 @@ let methods = [
 // 通过遍历methods数组中的每个方法名，将对应的函数重新定义ArrayMethods
 methods.forEach(item => {
     ArrayMethods[item] = function (...args) {
-        console.log('劫持数组')
+        // console.log('劫持数组')
         // 将方法内部的"this"指向当前的数组对象，并传入args作为参数
         /**
          * oldArrayProtoMethods[item]=arr.push(arr) 
          * 所以得需要绑定this
          */
         let result = oldArrayProtoMethods[item].apply(this, args)
-        console.log(args)   // [{b:6}]
+        // console.log(args)   // [{b:6}]
         // 问题： 数组追加对象的情况 arr arr.push({a:1})
         let inserted
         switch (item) {
@@ -40,7 +40,7 @@ methods.forEach(item => {
                 break;
             
         }
-        console.log(inserted)
+        // console.log(inserted)
         
         let ob = this.__ob__ 
         if(inserted){
