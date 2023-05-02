@@ -4,6 +4,85 @@
   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.Vue = factory());
 })(this, (function () { 'use strict';
 
+  // ast语法树 vnode 
+  /**
+   * {
+   * tag: 'div',
+   * attrs: [{id:"app"}],
+   * children:[tag:null,text:hello,{tag:'div'}]
+   * }
+   */
+
+  // 标签名 a-aaa
+  var ncname = "[a-zA-Z_][\\-\\.0-9_a-zA-Z]*";
+  // 命名空间标签 aa:aa-xxx
+  var qnameCapture = "((?:".concat(ncname, "\\:)?").concat(ncname, ")"); // <span:xx> 
+  // 开始标签-捕获标签名
+  var startTagOpen = new RegExp("^<".concat(qnameCapture));
+  // 匹配属性
+  var attribute = /^\s*([^\s"'<>\/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/;
+  // 匹配标签结束的 >
+  var startTagClose = /^\s*(\/?)>/;
+
+  // 遍历
+
+  function parseHTML(html) {
+    // <div id="app"> hello {{ msg }} </div>  // 开始标签，文本，结束标签
+    while (html) {
+      // html 为空结束
+      // 判断标签 <>
+      var textEnd = html.indexOf('<'); // 如果为0的话 证明第一个是<，说明是一个标签
+      if (textEnd === 0) {
+        // 标签
+        // (1) 开始标签
+        parseStartTag(); // 开始标签的内容
+      }
+
+      break;
+    }
+    function parseStartTag() {
+      // 解析开始标签
+      var start = html.match(startTagOpen); // 1.结果 2.false
+      console.log(start);
+      // 创建语法树 ast
+      var match = {
+        tagName: start[1],
+        attrs: []
+      };
+      // 删除 开始标签
+      advance(start[0].length);
+      // 属性
+      // 注意  多个属性需要遍历
+      // 注意  结束标签 ">"
+      var attr;
+      var end;
+      while (!(end = html.match(startTagClose)) && (attr = html.match(attribute))) {
+        console.log(attr); // {}
+        match.attrs.push({
+          name: attr[1],
+          value: attr[3] || attr[4] || attr[5]
+        });
+        advance(attr[0].length);
+        break;
+      }
+
+      // 当字符剩下一个'>'符号的时候，需要通过end去处理它
+      if (end) {
+        console.log(end);
+        advance(end[0].length);
+        return match;
+      }
+    }
+    function advance(n) {
+      // 表示拿到从n开始后面的东西
+      html = html.substring(n);
+      console.log(html);
+    }
+  }
+  function compileToFunction(template) {
+    parseHTML(template);
+  }
+
   function _iterableToArrayLimit(arr, i) {
     var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"];
     if (null != _i) {
@@ -317,10 +396,24 @@
           // 获取html
           el = el.outerHTML;
           console.log(el);
+
+          // 变成ast语法树
+          compileToFunction(el);
+
+          // render()
         }
       }
     };
   }
+
+  // ast语法树 vnode 
+  /**
+   * {
+   * tag: 'div',
+   * attrs: [{id:"app"}],
+   * children:[tag:null,text:hello,{tag:'div'}]
+   * }
+   */
 
   function Vue(options) {
     // console.log(options)

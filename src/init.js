@@ -1,3 +1,4 @@
+import { compileToFunction } from "./compile/index"
 import { initState } from "./initState"
 
 // 为 Vue.js 添加初始化 mixin
@@ -34,11 +35,28 @@ export function initMixin(Vue) {
             if(!template && el) {
                 // 获取html
                 el = el.outerHTML
-                console.log(el) // <div id="app"> hello {{ msg }} </div>
+                console.log(el) 
+                
+                // 变成ast语法树
+                let ast = compileToFunction(el)
+
+                // render()
             }  
         }
     }
 }
+
+// ast语法树 vnode 
+ /**
+  * {
+  * tag: 'div',
+  * attrs: [{id:"app"}],
+  * children:[tag:null,text:hello,{tag:'div'}]
+  * }
+  */
+
+
+
 
 
 
