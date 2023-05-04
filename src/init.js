@@ -9,10 +9,13 @@ export function initMixin(Vue) {
 
         // 将当前实例赋值给 vm
         let vm = this
+        
         // 将传入的 options 对象赋值给实例的 $options 属性
         vm.$options = options
+        
         // 初始化实例状态
         initState(vm)
+        console.log(vm)
 
 
         // 渲染模版  el
