@@ -25,10 +25,15 @@ const startTagClose = /^\s*(\/?)>/;
 const defaultTagRE = /\{\{((?:.|\r?\n)+?)\}\}/g;
 
 // 遍历
+// 创建一个ast对象
+function createAstElement(tagName,attrs){
+    return {
+
+    }
+}
+// 数据结构  栈
 function start(tag, attrs) {  // 开始标签
     console.log(tag, attrs, '开始的标签')
-
-
 }
 
 function charts(text) { // 获取文本
@@ -39,7 +44,7 @@ function end(tag) { // 结束的标签
     console.log(tag, '结束标签')
 }
 
-// 
+// 创建一个 ast 对象
 
 function parseHTML(html) {
     // <div id="app"> hello {{ msg }} <h></h></div>  // 开始标签，文本，结束标签
