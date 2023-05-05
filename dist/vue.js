@@ -28,21 +28,58 @@
     var startTagClose = /^\s*(\/?)>/;
 
     // 遍历
+    // 创建一个ast语法树
+    // <div id="app"> hello {{ msg }} <h></h></div>
+    function createASTElement(tag, attrs) {
+      return {
+        tag: tag,
+        // 原树  是div或者span或等等
+        attrs: attrs,
+        // 属性
+        children: [],
+        // 子节点
+        type: 1,
+        // 元素类型
+        parent: null
+      };
+    }
+    var root; // 根元素
+    var createParent; // 当前元素的父亲
+    // 数据结构  栈
+    var stack = []; // [div,h]
+
     function start(tag, attrs) {
       // 开始标签
-      console.log(tag, attrs, '开始的标签');
+      var element = createASTElement(tag, attrs);
+      if (!root) {
+        root = element;
+      }
+      createParent = element;
+      stack.push(element);
     }
     function charts(text) {
       // 获取文本
-      console.log(text, '文本内容部分');
+      // console.log(text, '文本内容部分')
+      // 去掉空格
+      text = text.replace(/s/g, ''); // /s 表示空格 /g表示全部 /s/g表示全部空格 
+      if (text) {
+        createParent.children.push({
+          type: 3
+        });
+      }
     }
     function end(tag) {
       // 结束的标签
-      console.log(tag, '结束标签');
+      var element = stack.pop(); // 拿到栈中最后一个元素
+      createParent = stack[stack.length - 1];
+      if (createParent) {
+        // 元素闭合
+        element.parent = createParent.tag;
+        createParent.children.push(element);
+      }
     }
 
-    // 
-
+    // 创建一个 ast 对象
     function parseHTML(html) {
       // <div id="app"> hello {{ msg }} <h></h></div>  // 开始标签，文本，结束标签
       while (html) {
@@ -59,7 +96,7 @@
           }
           // (2)结束标签
           var endTagMatch = html.match(endTag);
-          console.log(endTagMatch);
+          // console.log(endTagMatch)
           if (endTagMatch) {
             advance(endTagMatch[0].length);
             end(endTagMatch[1]);
@@ -70,7 +107,7 @@
         // 文本处理
         var text = void 0;
         if (textEnd > 0) {
-          console.log(textEnd);
+          // console.log(textEnd)
           // 获取文本内容
           text = html.substring(0, textEnd);
           // console.log(text)
@@ -123,11 +160,21 @@
         html = html.substring(n);
         // console.log(html)
       }
+      // console.log(root)
+      return root;
     }
 
     function compileToFunction(template) {
-      parseHTML(template);
+      // TODO: 一、 将html 变成ast 语法树
+      var ast = parseHTML(template);
+      console.log(ast);
+
+      // TODO: 二、 将ast语法树变成render函数 (1) ast 语法树变成字符串 (2) 字符串变成函数
     }
+
+    /**
+     * 
+     */
 
     function _iterableToArrayLimit(arr, i) {
       var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"];
