@@ -23,11 +23,28 @@ function genProps(attrs){
             attr.value =obj 
         }
         // 拼接
-        str += `${attr.name}:${JSON.stringfy(attr.value)}`
+        str += `${attr.name}:${JSON.stringify(attr.value)},`
+    }
+    return `{${str.slice(0,-1)}}`
+}
+
+// 处理子节点(1)
+function genChildren(el){
+    let children = el.children  // 有无子集
+    if(children) {
+        // 处理数组
+        return children.map(child => gen(child)).join(',')
     }
 }
+// 
+function gen(node){
+    
+}
+
 export function generate(el) {  // ast
     console.log(el)
     // 注意属性 {id:app,style:{color:red,fo}}
-    let code = `_c(${el.tag},${el.attrs.length? `${genProps(el.attrs)}`:'null'})`
+    let children = genChildren(el)
+    let code = `_c(${el.tag},${el.attrs.length? `${genProps(el.attrs)}`:'null'},${children ? `${children}` : 'null'})`
+    console.log(code)
 }

@@ -126,17 +126,33 @@
         attr.value = obj;
       }
       // 拼接
-      str += "".concat(attr.name, ":").concat(JSON.stringfy(attr.value));
+      str += "".concat(attr.name, ":").concat(JSON.stringify(attr.value), ",");
     };
     for (var i = 0; i < attrs.length; i++) {
       _loop();
     }
+    return "{".concat(str.slice(0, -1), "}");
   }
+
+  // 处理子节点(1)
+  function genChildren(el) {
+    var children = el.children; // 有无子集
+    if (children) {
+      // 处理数组
+      return children.map(function (child) {
+        return gen();
+      }).join(',');
+    }
+  }
+  // 
+  function gen(node) {}
   function generate(el) {
     // ast
     console.log(el);
     // 注意属性 {id:app,style:{color:red,fo}}
-    "_c(".concat(el.tag, ",").concat(el.attrs.length ? "".concat(genProps(el.attrs)) : 'null', ")");
+    var children = genChildren(el);
+    var code = "_c(".concat(el.tag, ",").concat(el.attrs.length ? "".concat(genProps(el.attrs)) : 'null', ",").concat(children ? "".concat(children) : 'null', ")");
+    console.log(code);
   }
 
   // <div id="app"> hello {{ msg }} <h></h></div>
