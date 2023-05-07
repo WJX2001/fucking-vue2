@@ -56,7 +56,7 @@ function gen(node) { // 1：元素   3：文本
         let lastindex = defaultTagRE.lastIndex = 0 // 重置lastIndex 这样可以重复使用正则判断
         let match
         while (match = defaultTagRE.exec(text)) {  //使用exec 执行匹配操作，并返回一个数组；每次调用都从上一次匹配结束的位置继续搜索
-            console.log(match)
+            // console.log(match)
             let index = match.index
             if (index > lastindex) {  
                 // 添加除了差值运算符之前的内容
@@ -79,11 +79,11 @@ function gen(node) { // 1：元素   3：文本
 
 // 处理标签部分
 export function generate(el) {  // ast
-    console.log(el)
+    // console.log(el)
     // 注意属性 {id:app,style:{color:red,fo}}
     let children = genChildren(el)
     // console.log(children)
-    let code = `_c(${el.tag},${el.attrs.length ? `${genProps(el.attrs)}` : 'null'} ${children ? `${children}` : 'null'})`
+    let code = `_c(${el.tag},${el.attrs.length ? `${genProps(el.attrs)}` : 'null'} ,${children ? `${children}` : 'null'})`
     console.log(code)
     // 这里一定要返回，否则上面调用的时候不会处理
     return code

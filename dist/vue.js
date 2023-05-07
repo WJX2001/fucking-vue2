@@ -168,7 +168,7 @@
       var match;
       while (match = defaultTagRE.exec(text)) {
         //使用exec 执行匹配操作，并返回一个数组；每次调用都从上一次匹配结束的位置继续搜索
-        console.log(match);
+        // console.log(match)
         var index = match.index;
         if (index > lastindex) {
           // 添加除了差值运算符之前的内容
@@ -191,11 +191,11 @@
   // 处理标签部分
   function generate(el) {
     // ast
-    console.log(el);
+    // console.log(el)
     // 注意属性 {id:app,style:{color:red,fo}}
     var children = genChildren(el);
     // console.log(children)
-    var code = "_c(".concat(el.tag, ",").concat(el.attrs.length ? "".concat(genProps(el.attrs)) : 'null', " ").concat(children ? "".concat(children) : 'null', ")");
+    var code = "_c(".concat(el.tag, ",").concat(el.attrs.length ? "".concat(genProps(el.attrs)) : 'null', " ,").concat(children ? "".concat(children) : 'null', ")");
     console.log(code);
     // 这里一定要返回，否则上面调用的时候不会处理
     return code;
@@ -370,16 +370,16 @@
     // console.log(ast)
 
     // TODO: 二、 将ast语法树变成render函数 (1) ast 语法树变成字符串 (2) 字符串变成函数
-    generate(ast);
-  }
+    var code = generate(ast); // _c_v_s   解析元素：_c  解析文本: _v 解析变量: _s
 
-  /**
-   * <div id="app"> hello {{ msg }} <h></h> </div>
-   * 
-   * render(){  _c 解析标签
-   *    return _c('div',{id:app},_v('hello'+_s(msg)),_c)
-   * }
-  */
+    // TODO: 三、 将render 字符串变成函数
+    /**
+     * with 语句是js中的一个特殊语句，可以将一个对象作为作用域，使得对象内部的变量可以直接被调用，而无需使用对象本身作为前缀
+     * 可以直接使用 a  而不用Obj.a
+     */
+    var render = new Function("with(this){return ".concat(code, "}"));
+    console.log(render);
+  }
 
   // 重写数组
   // 1. 获取原来的数组方法
