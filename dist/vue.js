@@ -138,17 +138,17 @@
   function genChildren(el) {
     var children = el.children; // 有无子集
     if (children) {
-      // 处理数组
+      // 处理数组，将对象处理成字符串
       return children.map(function (child) {
         return gen(child);
       }).join(',');
     }
   }
-  //  具体处理
+  //  具体处理子节点
   function gen(node) {
     // 1：元素   3：文本
     if (node.type === 1) {
-      // 如果是元素，继续递归
+      // 如果是元素或标签，继续递归
       return generate(node);
     } else {
       // 文本    (1) 只是文本 hello   (2)   差值表达式
@@ -176,26 +176,29 @@
         }
         // 解决 {{}}
         tokens.push("_s(".concat(match[1].trim(), ")"));
-        console.log(tokens);
         lastindex = index + match[0].length;
-        // 如果差值表达式的结束位置小于整个文本长度，后面还有内容，就后面的内容也处理掉
-        if (lastindex < text.length) {
-          // slice表示从lastindex开始，一直截取到字符串的末尾
-          tokens.push(JSON.stringify(text.slice(lastindex)));
-        }
-        console.log(tokens);
-        return "_v(".concat(tokens.join('+'), ")");
       }
+      // 如果差值表达式的结束位置小于整个文本长度，说明后面还有内容，就后面的内容也处理掉
+      if (lastindex < text.length) {
+        // slice表示从lastindex开始，一直截取到字符串的末尾
+        tokens.push(JSON.stringify(text.slice(lastindex)));
+      }
+      // 最终返回结果
+      return "_v(".concat(tokens.join('+'), ")");
     }
   }
+
+  // 处理标签部分
   function generate(el) {
     // ast
     console.log(el);
     // 注意属性 {id:app,style:{color:red,fo}}
     var children = genChildren(el);
     // console.log(children)
-    var code = "_c(".concat(el.tag, ",").concat(el.attrs.length ? "".concat(genProps(el.attrs)) : 'null', ",").concat(children ? "".concat(children) : 'null', ")");
+    var code = "_c(".concat(el.tag, ",").concat(el.attrs.length ? "".concat(genProps(el.attrs)) : 'null', " ").concat(children ? "".concat(children) : 'null', ")");
     console.log(code);
+    // 这里一定要返回，否则上面调用的时候不会处理
+    return code;
   }
 
   // <div id="app"> hello {{ msg }} <h></h></div>
@@ -255,7 +258,9 @@
     // 获取文本
     // console.log(text, '文本内容部分')
     // 去掉空格
-    text = text.replace(/s/g, ''); // /s 表示空格 /g表示全部 /s/g表示全部空格 
+    text = text.replace(/a/g, ''); // /a 表示空格 /g表示全部 /a/g表示全部空格 
+    // 去掉空格 写法II
+    // text = text.split(' ').join('')
     if (text) {
       createParent.children.push({
         type: 3,

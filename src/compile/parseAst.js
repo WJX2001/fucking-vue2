@@ -53,7 +53,9 @@ function start(tag, attrs) {  // 开始标签
 function charts(text) { // 获取文本
     // console.log(text, '文本内容部分')
     // 去掉空格
-    text = text.replace(/s/g,'')  // /s 表示空格 /g表示全部 /s/g表示全部空格 
+    text = text.replace(/a/g,'')  // /a 表示空格 /g表示全部 /a/g表示全部空格 
+    // 去掉空格 写法II
+    // text = text.split(' ').join('')
     if(text) {
         createParent.children.push({
             type:3,

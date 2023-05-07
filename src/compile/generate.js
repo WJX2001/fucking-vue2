@@ -32,13 +32,13 @@ function genProps(attrs) {
 function genChildren(el) {
     let children = el.children  // 有无子集
     if (children) {
-        // 处理数组
-        return children.map(child => gen(child)).join(',')
+        // 处理数组，将对象处理成字符串
+        return children.map(child => gen(child)).join(',')   
     }
 }
-//  具体处理
+//  具体处理子节点
 function gen(node) { // 1：元素   3：文本
-    if (node.type === 1) { // 如果是元素，继续递归
+    if (node.type === 1) { // 如果是元素或标签，继续递归
         return generate(node)
     } else { // 文本    (1) 只是文本 hello   (2)   差值表达式
         let text = node.text  // 获取文本
@@ -64,26 +64,28 @@ function gen(node) { // 1：元素   3：文本
             }
             // 解决 {{}}
             tokens.push(`_s(${match[1].trim()})`)
-            console.log(tokens)
             lastindex = index + match[0].length
-            // 如果差值表达式的结束位置小于整个文本长度，后面还有内容，就后面的内容也处理掉
-            if (lastindex < text.length) {
-                // slice表示从lastindex开始，一直截取到字符串的末尾
-                tokens.push(JSON.stringify(text.slice(lastindex)))
-            }
-            console.log(tokens)
-            return `_v(${tokens.join('+')})`
-
         }
+        // 如果差值表达式的结束位置小于整个文本长度，说明后面还有内容，就后面的内容也处理掉
+        if (lastindex < text.length) {
+            // slice表示从lastindex开始，一直截取到字符串的末尾
+            tokens.push(JSON.stringify(text.slice(lastindex)))
+        }
+        // 最终返回结果
+        return `_v(${tokens.join('+')})`
 
     }
 }
 
+// 处理标签部分
 export function generate(el) {  // ast
     console.log(el)
     // 注意属性 {id:app,style:{color:red,fo}}
     let children = genChildren(el)
     // console.log(children)
-    let code = `_c(${el.tag},${el.attrs.length ? `${genProps(el.attrs)}` : 'null'},${children ? `${children}` : 'null'})`
+    let code = `_c(${el.tag},${el.attrs.length ? `${genProps(el.attrs)}` : 'null'} ${children ? `${children}` : 'null'})`
     console.log(code)
+    // 这里一定要返回，否则上面调用的时候不会处理
+    return code
+    
 }
