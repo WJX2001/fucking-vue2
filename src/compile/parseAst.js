@@ -57,6 +57,8 @@ function charts(text) { // 获取文本
     if(text) {
         createParent.children.push({
             type:3,
+            text
+
 
         })
     }

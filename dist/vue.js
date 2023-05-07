@@ -215,7 +215,8 @@
     text = text.replace(/s/g, ''); // /s 表示空格 /g表示全部 /s/g表示全部空格 
     if (text) {
       createParent.children.push({
-        type: 3
+        type: 3,
+        text: text
       });
     }
   }
