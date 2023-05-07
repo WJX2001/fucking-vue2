@@ -6,7 +6,7 @@
  *    return _c('div',{id:app},_v('hello'+_s(msg)),_c)
  * }
 */
-
+const defaultTagRE = /\{\{((?:.|\r?\n)+?)\}\}/g;   // {{ }}
 // 处理属性
 function genProps(attrs){
     let str = '';
@@ -36,15 +36,46 @@ function genChildren(el){
         return children.map(child => gen(child)).join(',')
     }
 }
-// 
-function gen(node){
-    
+//  具体处理
+function gen(node){ // 1：元素   3：文本
+    if(node.type ===1) { // 如果是元素，继续递归
+        return generate(node)
+    }else { // 文本    (1) 只是文本 hello   (2)   差值表达式
+        let text = node.text  // 获取文本
+        
+        // 解析不带 {{}} 表达式的
+        if(!defaultTagRE.test(text)) {
+            return `_v(${JSON.stringify(text)})`
+        }
+        // 带有 {{ }} 差值表达式   hello {{name}} , {{msg}} 你好
+        let tokens = []  
+        let lastindex = defaultTagRE.lastIndex = 0 // 重置lastIndex 这样可以重复使用正则判断
+        let match
+        while(match = defaultTagRE.exec(text)) {
+            console.log(match)
+            let index = match.index
+            if(index>lastindex) {  // 添加内容
+                tokens.push(JSON.stringify(text.slice(lastindex,index))) // 内容
+            }
+            // 解决 {{}}
+            tokens.push(`_s(${match[1].trim()})`)
+            lastindex = index + match[0].length
+            // 
+            if(lastindex < text.length){
+                tokens.push(JSON.stringify(text.slice(lastindex)))
+            }
+            return `_v(${tokens.join('+')})`
+            
+        }
+
+    }
 }
 
 export function generate(el) {  // ast
     console.log(el)
     // 注意属性 {id:app,style:{color:red,fo}}
     let children = genChildren(el)
+    // console.log(children)
     let code = `_c(${el.tag},${el.attrs.length? `${genProps(el.attrs)}`:'null'},${children ? `${children}` : 'null'})`
     console.log(code)
 }

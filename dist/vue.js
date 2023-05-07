@@ -106,7 +106,7 @@
    *    return _c('div',{id:app},_v('hello'+_s(msg)),_c)
    * }
   */
-
+  var defaultTagRE = /\{\{((?:.|\r?\n)+?)\}\}/g; // {{ }}
   // 处理属性
   function genProps(attrs) {
     var str = '';
@@ -140,17 +140,52 @@
     if (children) {
       // 处理数组
       return children.map(function (child) {
-        return gen();
+        return gen(child);
       }).join(',');
     }
   }
-  // 
-  function gen(node) {}
+  //  具体处理
+  function gen(node) {
+    // 1：元素   3：文本
+    if (node.type === 1) {
+      // 如果是元素，继续递归
+      return generate(node);
+    } else {
+      // 文本    (1) 只是文本 hello   (2)   差值表达式
+      var text = node.text; // 获取文本
+
+      // 解析不带 {{}} 表达式的
+      if (!defaultTagRE.test(text)) {
+        return "_v(".concat(JSON.stringify(text), ")");
+      }
+      // 带有 {{ }} 差值表达式   hello {{name}} , {{msg}} 你好
+      var tokens = [];
+      var lastindex = defaultTagRE.lastIndex = 0; // 重置lastIndex 这样可以重复使用正则判断
+      var match;
+      while (match = defaultTagRE.exec(text)) {
+        console.log(match);
+        var index = match.index;
+        if (index > lastindex) {
+          // 添加内容
+          tokens.push(JSON.stringify(text.slice(lastindex, index))); // 内容
+        }
+        // 解决 {{}}
+        tokens.push("_s(".concat(match[1].trim(), ")"));
+        lastindex = index + match[0].length;
+        // 
+        if (lastindex < text.length) {
+          tokens.push(JSON.stringify(text.slice(lastindex)));
+        }
+        return "_v(".concat(tokens.join('+'), ")");
+      }
+    }
+  }
   function generate(el) {
     // ast
     console.log(el);
     // 注意属性 {id:app,style:{color:red,fo}}
     var children = genChildren(el);
+    // console.log(children)
     var code = "_c(".concat(el.tag, ",").concat(el.attrs.length ? "".concat(genProps(el.attrs)) : 'null', ",").concat(children ? "".concat(children) : 'null', ")");
     console.log(code);
   }
