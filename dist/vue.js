@@ -160,22 +160,30 @@
       }
       // 带有 {{ }} 差值表达式   hello {{name}} , {{msg}} 你好
       var tokens = [];
+      /**
+       *  TODO: 下方使用了while循环，循环中使用了正则表达式匹配差值表达式，由于正则符号带有全局标志'g'，因此每次调用exec
+       *        会从上一次匹配结束的位置继续搜索下一个匹配的位置，将它重置为0，确保从文本的开头开始搜索下一个匹配的位置
+       */
       var lastindex = defaultTagRE.lastIndex = 0; // 重置lastIndex 这样可以重复使用正则判断
       var match;
       while (match = defaultTagRE.exec(text)) {
+        //使用exec 执行匹配操作，并返回一个数组；每次调用都从上一次匹配结束的位置继续搜索
         console.log(match);
         var index = match.index;
         if (index > lastindex) {
-          // 添加内容
-          tokens.push(JSON.stringify(text.slice(lastindex, index))); // 内容
+          // 添加除了差值运算符之前的内容
+          tokens.push(JSON.stringify(text.slice(lastindex, index)));
         }
         // 解决 {{}}
         tokens.push("_s(".concat(match[1].trim(), ")"));
+        console.log(tokens);
         lastindex = index + match[0].length;
-        // 
+        // 如果差值表达式的结束位置小于整个文本长度，后面还有内容，就后面的内容也处理掉
         if (lastindex < text.length) {
+          // slice表示从lastindex开始，一直截取到字符串的末尾
           tokens.push(JSON.stringify(text.slice(lastindex)));
         }
+        console.log(tokens);
         return "_v(".concat(tokens.join('+'), ")");
       }
     }
