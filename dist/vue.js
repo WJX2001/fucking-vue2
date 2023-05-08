@@ -617,6 +617,13 @@
     return vnode.el;
   }
 
+  // TODO: 面试题：Vue的渲染流程
+
+  /**
+   * 数据初始化 -> 对模板进行编译 -> 变成render函数(div变ast语法树 => render字符串 => render函数) 
+   *           -> 通过render函数变成vnode -> vnode变成真实dom -> 放到页面
+   */
+
   // 组件挂载，进行渲染
   function mountCoponent(vm, el) {
     // (1)vm._render 将render函数 变成虚拟DOM (2)vm._updata 将虚拟DOM 变成真实DOM
@@ -683,7 +690,8 @@
         }
       }
       // 挂载组件 进行渲染
-      mountCoponent(vm);
+      mountCoponent(vm); // vm._updata  将虚拟DOM 变成真实DOM  
+      // vm._render  将render函数 变成虚拟DOM
     };
   }
 
