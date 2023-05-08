@@ -44,3 +44,13 @@ function createEl(vnode) { // vnode: {tag,text,data,children}
     
 
 }
+
+
+
+// TODO: 面试题：Vue的渲染流程
+
+/**
+ * 数据初始化 -> 对模板进行编译 -> 变成render函数(div变ast语法树 => render字符串 => render函数) 
+ *           -> 通过render函数变成vnode -> vnode变成真实dom -> 放到页面
+ */
+

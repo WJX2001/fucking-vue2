@@ -18,7 +18,6 @@ export function initMixin(Vue) {
         initState(vm)
         console.log(vm)
 
-
         // 渲染模版  el
         if (vm.$options.el) {
             vm.$mount(vm.$options.el)
@@ -50,7 +49,8 @@ export function initMixin(Vue) {
             }  
         }
         // 挂载组件 进行渲染
-        mountCoponent(vm,el)
+        mountCoponent(vm,el)  // vm._updata  将虚拟DOM 变成真实DOM  
+                              // vm._render  将render函数 变成虚拟DOM
     }
 }
 
