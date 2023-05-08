@@ -195,7 +195,7 @@
     // 注意属性 {id:app,style:{color:red,fo}}
     var children = genChildren(el);
     // console.log(children)
-    var code = "_c(".concat(el.tag, ",").concat(el.attrs.length ? "".concat(genProps(el.attrs)) : 'null', " ,").concat(children ? "".concat(children) : 'null', ")");
+    var code = "_c('".concat(el.tag, "',").concat(el.attrs.length ? "".concat(genProps(el.attrs)) : 'undefined', " ,").concat(children ? "".concat(children) : '', ")");
     console.log(code);
     // 这里一定要返回，否则上面调用的时候不会处理
     return code;
@@ -378,7 +378,7 @@
      * 可以直接使用 a  而不用Obj.a
      */
     var render = new Function("with(this){return ".concat(code, "}"));
-    console.log(render);
+    return render;
   }
 
   // 重写数组
@@ -566,6 +566,19 @@
     // data{}  (1) 对象 (2) 数组 {a:{b:1},list:[1,2,3],arr:[{}]}
   }
 
+  // 组件挂载，进行渲染
+  function mountCoponent(vm, el) {
+    // (1)vm._render 将render函数 变成虚拟DOM (2)vm._updata 将虚拟DOM 变成真实DOM
+    vm._updata(vm._render());
+  }
+
+  // 生命周期初始化
+  function lifecycleMixin(Vue) {
+    Vue.prototype._updata = function (vnode) {};
+  }
+
+  // （1）render() 函数 -> vnode -> 真实dom
+
   // 为 Vue.js 添加初始化 mixin
   function initMixin(Vue) {
     // 将 _init 方法添加到 Vue.prototype 中
@@ -604,11 +617,14 @@
           console.log(el);
 
           // 变成ast语法树
-          compileToFunction(el);
-
-          // render()
+          var render = compileToFunction(el);
+          console.log(render);
+          // (1) 将render 函数变成vnode  (2) 将vnode 变成真实的DOM 放到页面上
+          options.render = render;
         }
       }
+      // 挂载组件 进行渲染
+      mountCoponent(vm);
     };
   }
 
@@ -621,12 +637,80 @@
    * }
    */
 
+  function renderMixin(Vue) {
+    // 处理标签方法
+    Vue.prototype._c = function () {
+      // 创建标签
+      return createElement.apply(void 0, arguments);
+    };
+    // 处理文本
+    Vue.prototype._v = function (text) {
+      return createText(text);
+    };
+    // 处理变量
+    Vue.prototype._s = function (val) {
+      return val === null ? "" : _typeof(val) === 'object' ? JSON.stringify(val) : val;
+    };
+    Vue.prototype._render = function () {
+      // render函数变成 vnode
+      var vm = this; // 拿到实例对象
+      var render = vm.$options.render; // 参考init.js中 options.render = render 变成ast语法树部分
+      var vnode = render.call(this);
+      console.log(vnode);
+      return vnode;
+    };
+  }
+
+  // 创建元素
+  function createElement(tag) {
+    var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    for (var _len = arguments.length, children = new Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+      children[_key - 2] = arguments[_key];
+    }
+    return vnode(tag, data, data.key, children);
+  }
+
+  // 创建文本
+  function createText(text) {
+    return vnode(undefined, undefined, undefined, undefined, text);
+  }
+
+  // 创建虚拟DOM  vnode
+  function vnode(tag, data, key, children, text) {
+    return {
+      tag: tag,
+      data: data,
+      key: key,
+      children: children,
+      text: text
+    };
+  }
+
+  // vnode   描述节点
+
+  /**
+   * {
+   * tag,
+   * text,
+   * children
+   * 
+   * }
+   */
+
   function Vue(options) {
     // console.log(options)
     // 初始化
     this._init(options);
   }
+
+  // 状态初始化
   initMixin(Vue);
+
+  // 生命周期初始化
+  lifecycleMixin(Vue); // 添加生命周期
+
+  // 渲染文件
+  renderMixin(Vue); // 添加_render方法
 
   return Vue;
 

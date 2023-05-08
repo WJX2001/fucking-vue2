@@ -83,7 +83,7 @@ export function generate(el) {  // ast
     // 注意属性 {id:app,style:{color:red,fo}}
     let children = genChildren(el)
     // console.log(children)
-    let code = `_c(${el.tag},${el.attrs.length ? `${genProps(el.attrs)}` : 'null'} ,${children ? `${children}` : 'null'})`
+    let code = `_c('${el.tag}',${el.attrs.length ? `${genProps(el.attrs)}` : 'undefined'} ,${children ? `${children}` : ''})`
     console.log(code)
     // 这里一定要返回，否则上面调用的时候不会处理
     return code

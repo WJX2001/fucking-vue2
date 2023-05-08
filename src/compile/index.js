@@ -16,6 +16,5 @@ export function compileToFunction(template) {
      * 可以直接使用 a  而不用Obj.a
      */
     let render = new Function(`with(this){return ${code}}`)
-    console.log(render)
-
+    return render
 }

@@ -1,5 +1,6 @@
 import { compileToFunction } from "./compile/index"
 import { initState } from "./initState"
+import { mountCoponent } from "./lifecycle"
 
 // 为 Vue.js 添加初始化 mixin
 export function initMixin(Vue) {
@@ -41,11 +42,14 @@ export function initMixin(Vue) {
                 console.log(el) 
                 
                 // 变成ast语法树
-                let ast = compileToFunction(el)
-
-                // render()
+                let render = compileToFunction(el)
+                console.log(render)
+                // (1) 将render 函数变成vnode  (2) 将vnode 变成真实的DOM 放到页面上
+                options.render = render
             }  
         }
+        // 挂载组件 进行渲染
+        mountCoponent(vm,el)
     }
 }
 
