@@ -3,7 +3,7 @@
  * <div id="app"> hello {{ msg }} <h></h> </div>
  * 
  * render(){  _c 解析标签
- *    return _c('div',{id:app},_v('hello'+_s(msg)),_c)
+ *    return _c('div',{id:app},_v('hello'+_s()),_c)
  * }
 */
 const defaultTagRE = /\{\{((?:.|\r?\n)+?)\}\}/g;   // {{ }}

@@ -17,7 +17,7 @@ export function renderMixin(Vue) {
         let vm = this   // 拿到实例对象
         let render = vm.$options.render    // 参考init.js中 options.render = render 变成ast语法树部分
         let vnode = render.call(this)
-        console.log(vnode)
+        // console.log(vnode)
         return vnode
     }
 

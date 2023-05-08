@@ -103,7 +103,7 @@
    * <div id="app"> hello {{ msg }} <h></h> </div>
    * 
    * render(){  _c 解析标签
-   *    return _c('div',{id:app},_v('hello'+_s(msg)),_c)
+   *    return _c('div',{id:app},_v('hello'+_s()),_c)
    * }
   */
   var defaultTagRE = /\{\{((?:.|\r?\n)+?)\}\}/g; // {{ }}
@@ -566,6 +566,57 @@
     // data{}  (1) 对象 (2) 数组 {a:{b:1},list:[1,2,3],arr:[{}]}
   }
 
+  function patch(oldVnode, vnode) {
+    console.log(oldVnode, vnode);
+    // vnode -> 真实的 dom
+    // (1) 创建新DOM
+    var el = createEl(vnode);
+    // console.log(el)
+    // (2) 替换dom    
+    /**
+     * 1) 获取父节点
+     * 2) 插入
+     * 3) 删除
+    */
+
+    // 1.获取父节点
+    var parentEl = oldVnode.parentNode; // 父节点是 body
+    // 将el 插入到原来的元素 oldVnode的下一个兄弟元素之前，相当于替换了老的oldVnode
+    parentEl.insertBefore(el, oldVnode.nextsibling);
+    // 将原来的老元素删掉
+    parentEl.removeChild(oldVnode);
+    return el;
+    // console.log(parentEl)
+  }
+
+  // 创建dom
+  function createEl(vnode) {
+    // vnode: {tag,text,data,children}
+    var tag = vnode.tag,
+      children = vnode.children;
+      vnode.key;
+      vnode.data;
+      var text = vnode.text;
+
+    // TODO: 判断是标签的情况
+    if (typeof tag === 'string') {
+      // 标签
+      vnode.el = document.createElement(tag); // 创建元素div
+      // children []
+      if (children.length > 0) {
+        // 有children 还需要创建元素  [{}]
+        children.forEach(function (child) {
+          // 需要递归，判断是文本还是标签
+          vnode.el.appendChild(createEl(child));
+        });
+      }
+    } else {
+      // TODO: 判断是文本的情况
+      vnode.el = document.createTextNode(text);
+    }
+    return vnode.el;
+  }
+
   // 组件挂载，进行渲染
   function mountCoponent(vm, el) {
     // (1)vm._render 将render函数 变成虚拟DOM (2)vm._updata 将虚拟DOM 变成真实DOM
@@ -574,7 +625,14 @@
 
   // 生命周期初始化
   function lifecycleMixin(Vue) {
-    Vue.prototype._updata = function (vnode) {};
+    // _updata 将虚拟DOM变成真实DOM
+    Vue.prototype._updata = function (vnode) {
+      // console.log(vnode)
+      var vm = this;
+      // console.log(vm.$el)
+      // 此处传入两个参数  (1) 旧的dom (2) vnode
+      vm.$el = patch(vm.$el, vnode);
+    };
   }
 
   // （1）render() 函数 -> vnode -> 真实dom
@@ -607,6 +665,7 @@
       // el template render
       var vm = this;
       el = document.querySelector(el); // 获取元素
+      vm.$el = el;
       var options = vm.$options;
       if (!options.render) {
         // 没有render
@@ -656,7 +715,7 @@
       var vm = this; // 拿到实例对象
       var render = vm.$options.render; // 参考init.js中 options.render = render 变成ast语法树部分
       var vnode = render.call(this);
-      console.log(vnode);
+      // console.log(vnode)
       return vnode;
     };
   }

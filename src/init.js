@@ -33,6 +33,7 @@ export function initMixin(Vue) {
         // el template render
         let vm = this
         el = document.querySelector(el)  // 获取元素
+        vm.$el = el
         let options = vm.$options
         if(!options.render) {  // 没有render
             let template = options.template
