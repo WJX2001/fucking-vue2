@@ -15,8 +15,10 @@
 
   // 遍历生命周期
   HOOKS.forEach(function (hooks) {
-    starts[hooks] = mergeHook();
+    starts[hooks] = mergeHook;
   });
+
+  // 这部分专门处理生命周期里的内容，区分于下面的mergeOptions,这里只是给每个属性一个方法，并不去执行它，下面去执行它
   function mergeHook(parentVal, childVal) {
     // Vue.options = {created: [a,b,c],watch:[a,b]}
     if (childVal) {
@@ -33,6 +35,7 @@
 
   // 传入参数对应着 Vue.options,mixin
   function mergeOptions(parent, child) {
+    //{}  {created}
     console.log(parent, child);
     // Vue.options = {created: [a,b,c],watch:[a,b]}
     var options = {};
@@ -56,6 +59,7 @@
       }
     }
     console.log(options);
+    return options;
   }
 
   function initGlobalApi(Vue) {
@@ -65,8 +69,8 @@
     Vue.Mixin = function (mixin) {
       // 传入的是一个对象 {}  
       // 对象的合并
+      this.options = mergeOptions(this.options, mixin);
       console.log(Vue.options);
-      mergeOptions(Vue.options, mixin);
     };
   }
 
@@ -746,7 +750,7 @@
         if (!template && el) {
           // 获取html
           el = el.outerHTML;
-          console.log(el);
+          // console.log(el) 
 
           // 变成ast语法树
           var render = compileToFunction(el);

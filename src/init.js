@@ -39,7 +39,7 @@ export function initMixin(Vue) {
             if(!template && el) {
                 // 获取html
                 el = el.outerHTML
-                console.log(el) 
+                // console.log(el) 
                 
                 // 变成ast语法树
                 let render = compileToFunction(el)

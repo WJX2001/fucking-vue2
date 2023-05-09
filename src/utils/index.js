@@ -23,10 +23,12 @@ starts.methods = function() {} // 合并方法
 
 // 遍历生命周期
 HOOKS.forEach(hooks => {
-    starts[hooks] = mergeHook()
+    starts[hooks] = mergeHook
 })
 
+// 这部分专门处理生命周期里的内容，区分于下面的mergeOptions,这里只是给每个属性一个方法，并不去执行它，下面去执行它
 function mergeHook(parentVal,childVal) {
+    
     // Vue.options = {created: [a,b,c],watch:[a,b]}
     if(childVal){
         if(parentVal){
@@ -41,7 +43,7 @@ function mergeHook(parentVal,childVal) {
 }
 
 // 传入参数对应着 Vue.options,mixin
-export function mergeOptions(parent,child) {
+export function mergeOptions(parent,child) {  //{}  {created}
     console.log(parent,child)
     // Vue.options = {created: [a,b,c],watch:[a,b]}
     const options = {}
@@ -64,4 +66,5 @@ export function mergeOptions(parent,child) {
         }
     }
     console.log(options)
+    return options
 }
