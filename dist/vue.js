@@ -4,6 +4,72 @@
   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.Vue = factory());
 })(this, (function () { 'use strict';
 
+  var HOOKS = ["beforeCreate", "created", "beforeMount", "mounted", "beforeUpdate", "updated", "activated", "deactivated", "beforeDestroy", "destroyed", "errorCaptured"];
+
+  // 策略模式
+  var starts = [];
+  starts.data = function () {}; // 合并data
+  starts.computed = function () {}; // 合并计算属性
+  starts.watch = function () {}; // 合并watch
+  starts.methods = function () {}; // 合并方法
+
+  // 遍历生命周期
+  HOOKS.forEach(function (hooks) {
+    starts[hooks] = mergeHook();
+  });
+  function mergeHook(parentVal, childVal) {
+    // Vue.options = {created: [a,b,c],watch:[a,b]}
+    if (childVal) {
+      if (parentVal) {
+        // 将父子的值拼接再一起
+        return parentVal.concat(childVal);
+      } else {
+        return [childVal];
+      }
+    } else {
+      return parentVal;
+    }
+  }
+
+  // 传入参数对应着 Vue.options,mixin
+  function mergeOptions(parent, child) {
+    console.log(parent, child);
+    // Vue.options = {created: [a,b,c],watch:[a,b]}
+    var options = {};
+    // 如果有父亲，没有儿子
+    for (var key in parent) {
+      mergeField(key);
+    }
+    // 有儿子，没有父亲
+    for (var _key in child) {
+      mergeField(_key);
+    }
+
+    // 合并函数
+    function mergeField(key) {
+      // 根据key  策略模式
+      if (starts[key]) {
+        //
+        options[key] = starts[key](parent[key], child[key]);
+      } else {
+        options[key] = child[key];
+      }
+    }
+    console.log(options);
+  }
+
+  function initGlobalApi(Vue) {
+    //源码
+    // Vue.options = {created: [a,b,c],watch:[a,b]}
+    Vue.options = {};
+    Vue.Mixin = function (mixin) {
+      // 传入的是一个对象 {}  
+      // 对象的合并
+      console.log(Vue.options);
+      mergeOptions(Vue.options, mixin);
+    };
+  }
+
   function _iterableToArrayLimit(arr, i) {
     var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"];
     if (null != _i) {
@@ -196,7 +262,7 @@
     var children = genChildren(el);
     // console.log(children)
     var code = "_c('".concat(el.tag, "',").concat(el.attrs.length ? "".concat(genProps(el.attrs)) : 'undefined', " ,").concat(children ? "".concat(children) : '', ")");
-    console.log(code);
+    // console.log(code)
     // 这里一定要返回，否则上面调用的时候不会处理
     return code;
   }
@@ -567,7 +633,7 @@
   }
 
   function patch(oldVnode, vnode) {
-    console.log(oldVnode, vnode);
+    // console.log(oldVnode, vnode)
     // vnode -> 真实的 dom
     // (1) 创建新DOM
     var el = createEl(vnode);
@@ -684,7 +750,7 @@
 
           // 变成ast语法树
           var render = compileToFunction(el);
-          console.log(render);
+          // console.log(render)
           // (1) 将render 函数变成vnode  (2) 将vnode 变成真实的DOM 放到页面上
           options.render = render;
         }
@@ -770,14 +836,17 @@
     this._init(options);
   }
 
-  // 状态初始化
+  //* 状态初始化
   initMixin(Vue);
 
-  // 生命周期初始化
+  //* 生命周期初始化
   lifecycleMixin(Vue); // 添加生命周期
 
-  // 渲染文件
+  //* 渲染文件
   renderMixin(Vue); // 添加_render方法
+
+  //* 全局方法 Vue.mixin Vue.coponent Vue.extend
+  initGlobalApi(Vue);
 
   return Vue;
 

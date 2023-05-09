@@ -1,5 +1,5 @@
 export function patch(oldVnode, vnode) {
-    console.log(oldVnode, vnode)
+    // console.log(oldVnode, vnode)
     // vnode -> 真实的 dom
     // (1) 创建新DOM
     let el = createEl(vnode)

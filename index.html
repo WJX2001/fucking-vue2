@@ -13,8 +13,8 @@
         // 因为用了 umd,所以在window上有个Vue
         // console.log(Vue)
         // 响应式 vue2 mvvm
-        Vue.Minxin({
-            created() {
+        Vue.Mixin({    // 全局方法
+            created: function a() {
                 
             }
         })
@@ -32,9 +32,12 @@
                     list:[1,2,3],
                     arr:[{a:1}]
                 }
+            },
+            created() {
+                console.log(555)
             }
         })
-        // .$mount('#app')
+        //  .$mount('#app')
         // console.log(vm)
         // get 方法测试
         // console.log(vm._data)
@@ -54,7 +57,9 @@
         // TODO: vue 生命周期  实现原理
             /** 
               * (1) Vue.Mixin({})  // 混入
+              * (2) 设计模式 订阅发布  vue  options: {data:[],watch:[]}
              */
+            //*
     </script>
 </body>
 </html>

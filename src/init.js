@@ -23,7 +23,7 @@ export function initMixin(Vue) {
             vm.$mount(vm.$options.el)
 
         }
-
+        
     }
 
     // 创建 $mount方法
@@ -43,7 +43,7 @@ export function initMixin(Vue) {
                 
                 // 变成ast语法树
                 let render = compileToFunction(el)
-                console.log(render)
+                // console.log(render)
                 // (1) 将render 函数变成vnode  (2) 将vnode 变成真实的DOM 放到页面上
                 options.render = render
             }  
