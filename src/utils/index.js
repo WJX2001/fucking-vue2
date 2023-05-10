@@ -16,7 +16,9 @@ export const HOOKS = [
   
 // 策略模式
 let starts = []
-starts.data = function() {} // 合并data
+starts.data = function(parentVal,childVal) {
+    return childVal
+} // 合并data
 starts.computed = function() {} // 合并计算属性
 starts.watch = function() {} // 合并watch
 starts.methods = function() {} // 合并方法
@@ -43,9 +45,9 @@ function mergeHook(parentVal,childVal) {
 }
 
 // 传入参数对应着 Vue.options,mixin
-export function mergeOptions(parent,child) {  //{}  {created}
+export function mergeOptions(parent,child) {  //{}  child:就是 Mixin中的  created
     console.log(parent,child)
-    // Vue.options = {created: [a,b,c],watch:[a,b]}
+    // Vue.options = {created: [a,b,c],watch:[a,b]}  Vue.mixin({created:f a()})
     const options = {}
     // 如果有父亲，没有儿子
     for(let key in parent){

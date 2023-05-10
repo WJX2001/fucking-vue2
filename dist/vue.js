@@ -8,7 +8,9 @@
 
   // 策略模式
   var starts = [];
-  starts.data = function () {}; // 合并data
+  starts.data = function (parentVal, childVal) {
+    return childVal;
+  }; // 合并data
   starts.computed = function () {}; // 合并计算属性
   starts.watch = function () {}; // 合并watch
   starts.methods = function () {}; // 合并方法
@@ -35,9 +37,9 @@
 
   // 传入参数对应着 Vue.options,mixin
   function mergeOptions(parent, child) {
-    //{}  {created}
+    //{}  child:就是 Mixin中的  created
     console.log(parent, child);
-    // Vue.options = {created: [a,b,c],watch:[a,b]}
+    // Vue.options = {created: [a,b,c],watch:[a,b]}  Vue.mixin({created:f a()})
     var options = {};
     // 如果有父亲，没有儿子
     for (var key in parent) {
@@ -71,6 +73,7 @@
       // 对象的合并
       this.options = mergeOptions(this.options, mixin);
       console.log(Vue.options);
+      //  console.log(Vue.$options)
     };
   }
 
@@ -696,8 +699,13 @@
 
   // 组件挂载，进行渲染
   function mountCoponent(vm, el) {
+    // TODO: 是组件挂载到页面之前执行的，它提供了一个修改组件数据或者DOM的机会
+    callHook(vm, "beforeMount");
     // (1)vm._render 将render函数 变成虚拟DOM (2)vm._updata 将虚拟DOM 变成真实DOM
+    //  经过update方法，Vue将组件的虚拟DOM渲染成真实的DOM，并挂载到页面上
     vm._updata(vm._render());
+    // TODO: mounted钩子，VUE2将虚拟DOM 渲染成真实的DOM，并将组件挂载到页面上
+    callHook(vm, "mounted");
   }
 
   // 生命周期初始化
@@ -712,7 +720,17 @@
     };
   }
 
-  // （1）render() 函数 -> vnode -> 真实dom
+  // （1）render() 函数 -> vnode -> 真实dom 
+
+  // 生命周期调用
+  function callHook(vm, hook) {
+    var handlers = vm.$options[hook];
+    if (handlers) {
+      for (var i = 0; i < handlers.length; i++) {
+        handlers[i].call(this); // 改变生命周期中this指向问题
+      }
+    }
+  }
 
   // 为 Vue.js 添加初始化 mixin
   function initMixin(Vue) {
@@ -724,10 +742,14 @@
       var vm = this;
 
       // 将传入的 options 对象赋值给实例的 $options 属性
-      vm.$options = options;
+      vm.$options = mergeOptions(Vue.options, options);
 
-      // 初始化实例状态
+      // TODO: 实例刚刚被创建，但是数据和事件还未初始化
+      callHook(vm, 'beforeCreated');
+      // TODO: 初始化实例状态
       initState(vm);
+      // TODO: 实例已经被创建，数据和事件已经初始化完成，但是模板还未编译成DOM
+      callHook(vm, 'created');
       console.log(vm);
 
       // 渲染模版  el

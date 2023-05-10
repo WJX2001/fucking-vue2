@@ -1,6 +1,7 @@
 import { compileToFunction } from "./compile/index"
 import { initState } from "./initState"
-import { mountCoponent } from "./lifecycle"
+import { callHook, mountCoponent } from "./lifecycle"
+import { mergeOptions } from "./utils/index"
 
 // 为 Vue.js 添加初始化 mixin
 export function initMixin(Vue) {
@@ -12,10 +13,15 @@ export function initMixin(Vue) {
         let vm = this
         
         // 将传入的 options 对象赋值给实例的 $options 属性
-        vm.$options = options
-        
-        // 初始化实例状态
+        vm.$options = mergeOptions(Vue.options,options)
+
+        // TODO: 实例刚刚被创建，但是数据和事件还未初始化
+        callHook(vm,'beforeCreated')
+        // TODO: 初始化实例状态
         initState(vm)
+        // TODO: 实例已经被创建，数据和事件已经初始化完成，但是模板还未编译成DOM
+        callHook(vm,'created')
+        
         console.log(vm)
 
         // 渲染模版  el

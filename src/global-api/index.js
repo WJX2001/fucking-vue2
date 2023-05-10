@@ -8,5 +8,6 @@ export function initGlobalApi(Vue){
         // 对象的合并
         this.options = mergeOptions(this.options,mixin)
          console.log(Vue.options)
+        //  console.log(Vue.$options)
     }   
 } 
