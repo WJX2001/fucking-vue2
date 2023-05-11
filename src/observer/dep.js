@@ -1,13 +1,23 @@
-import watcher from "./watcher"
 
+let id = 0
 class Dep{
     constructor() {
+        this.id = id++
         this.subs = []
     }
+
     // 收集watcher
     depend() {
-        this.subs.push(Dep.target)
+        // 我希望watcher 可以存放 dep
+        // 双向记忆
+        // this.subs.push(Dep.target)
+        Dep.target.addDep(this)
     }
+
+    addSub(watcher) {
+        this.subs.push(watcher)
+    }
+
     // 更新watcher
     notify(){
         this.subs.forEach(watcher => {

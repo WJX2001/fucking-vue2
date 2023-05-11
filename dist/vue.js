@@ -503,59 +503,29 @@
     };
   });
 
-  var id = 0;
-  var watcher = /*#__PURE__*/function () {
-    function watcher(vm, updataComponent, cb, options) {
-      _classCallCheck(this, watcher);
-      this.vm = vm;
-      this.exprOrfn = updataComponent;
-      this.cb = cb;
-      this.options = options;
-      this.id = id++;
-      // 判断
-      if (typeof updataComponent === 'function') {
-        this.getter = updataComponent; // 更新视图方法赋值给getter
-      }
-      // 更新视图
-      this.get();
-    }
-    //  初次渲染
-    _createClass(watcher, [{
-      key: "get",
-      value: function get() {
-        pushTarget(this); //给dep 添加watcher
-        this.getter(); // 渲染页面  vm._updata(vm._render())  _s(msg)  vm.msg
-        popTarget(); // 给dep 取消 watcher
-      }
-      // 更新
-    }, {
-      key: "updata",
-      value: function updata() {
-        this.getter();
-      }
-    }]);
-    return watcher;
-  }();
-
-  //TODO: 收集依赖  vue：dep watcher data: {name,msg}
-
-  // dep: dep和data中的属性是一一对应的
-  // watcher: 在视图上用几个，就有几个watcher
-  // dep与watcher：一对多  dep.name = [w1,w2]
-
-  //实现对象的收集依赖
-
+  var id$1 = 0;
   var Dep = /*#__PURE__*/function () {
     function Dep() {
       _classCallCheck(this, Dep);
+      this.id = id$1++;
       this.subs = [];
     }
+
     // 收集watcher
     _createClass(Dep, [{
       key: "depend",
       value: function depend() {
-        this.subs.push(Dep.target);
+        // 我希望watcher 可以存放 dep
+        // 双向记忆
+        // this.subs.push(Dep.target)
+        Dep.target.addDep(this);
       }
+    }, {
+      key: "addSub",
+      value: function addSub(watcher) {
+        this.subs.push(watcher);
+      }
+
       // 更新watcher
     }, {
       key: "notify",
@@ -776,6 +746,62 @@
    * 数据初始化 -> 对模板进行编译 -> 变成render函数(div变ast语法树 => render字符串 => render函数) 
    *           -> 通过render函数变成vnode -> vnode变成真实dom -> 放到页面
    */
+
+  var id = 0;
+  var watcher = /*#__PURE__*/function () {
+    function watcher(vm, updataComponent, cb, options) {
+      _classCallCheck(this, watcher);
+      this.vm = vm;
+      this.exprOrfn = updataComponent;
+      this.cb = cb;
+      this.options = options;
+      this.id = id++;
+      this.deps = []; // watcher存放 dep
+      this.depsId = new Set();
+      // 判断
+      if (typeof updataComponent === 'function') {
+        this.getter = updataComponent; // 更新视图方法赋值给getter
+      }
+      // 更新视图
+      this.get();
+    }
+    _createClass(watcher, [{
+      key: "addDep",
+      value: function addDep(dep) {
+        // 1.去重
+        var id = dep.id;
+        if (!this.depsId.has(id)) {
+          this.deps.push(dep);
+          this.depsId.add(id);
+          dep.addSub(this);
+        }
+      }
+
+      //  初次渲染
+    }, {
+      key: "get",
+      value: function get() {
+        pushTarget(this); //给dep 添加watcher
+        this.getter(); // 渲染页面  vm._updata(vm._render())  _s(msg)  vm.msg
+        popTarget(); // 给dep 取消 watcher
+      }
+      // 更新
+    }, {
+      key: "updata",
+      value: function updata() {
+        this.getter();
+      }
+    }]);
+    return watcher;
+  }();
+
+  //TODO: 收集依赖  vue：dep watcher data: {name,msg}
+
+  // dep: dep和data中的属性是一一对应的
+  // watcher: 在视图上用几个，就有几个watcher
+  // dep与watcher：一对多  dep.name = [w1,w2]
+
+  //实现对象的收集依赖
 
   //* 组件挂载，进行渲染
   function mountCoponent(vm, el) {

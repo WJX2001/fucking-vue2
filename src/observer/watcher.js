@@ -3,13 +3,15 @@
 import { popTarget, pushTarget } from "./dep"
 
 let id = 0
-class watcher{
+class watcher{ 
     constructor(vm,updataComponent,cb,options) {
         this.vm = vm
         this.exprOrfn = updataComponent
         this.cb = cb
         this.options = options
         this.id = id++
+        this.deps = []  // watcher存放 dep
+        this.depsId = new Set()
         // 判断
         if(typeof updataComponent === 'function'){
             this.getter = updataComponent  // 更新视图方法赋值给getter
@@ -17,6 +19,18 @@ class watcher{
         // 更新视图
         this.get() 
     }
+
+    addDep(dep){
+        // 1.去重
+        let id = dep.id
+        if(!this.depsId.has(id)){
+            this.deps.push(dep)
+            this.depsId.add(id)
+            dep.addSub(this)
+        }
+
+    }
+
     //  初次渲染
     get() {
         pushTarget(this)  //给dep 添加watcher
