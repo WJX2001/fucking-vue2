@@ -46,7 +46,7 @@ function mergeHook(parentVal,childVal) {
 
 // 传入参数对应着 Vue.options,mixin
 export function mergeOptions(parent,child) {  //{}  child:就是 Mixin中的  created
-    console.log(parent,child)
+    // console.log(parent,child)
     // Vue.options = {created: [a,b,c],watch:[a,b]}  Vue.mixin({created:f a()})
     const options = {}
     // 如果有父亲，没有儿子
@@ -67,6 +67,6 @@ export function mergeOptions(parent,child) {  //{}  child:就是 Mixin中的  cr
             options[key] = child[key]
         }
     }
-    console.log(options)
+    // console.log(options)
     return options
 }

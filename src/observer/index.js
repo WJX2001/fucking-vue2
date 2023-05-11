@@ -1,5 +1,5 @@
 import { ArrayMethods } from "./arr"
-
+import Dep from './dep'
 export function observer(data) {
     // console.log(data)
 
@@ -63,10 +63,14 @@ class Observer {
 // 对 对象中的属性进行劫持
 function definedReactive(data, key, value) {
     observer(value) // 深度代理
+    let dep = new Dep() //给每一个属性添加一个dep
     Object.defineProperty(data, key, {
         // 获取的时候触发
-        get() {
-            // console.log('获取的时候触发')
+        get() { // 收集依赖 watcher
+            if(Dep.target){
+                dep.depend()
+            }
+            console.log('依赖收集到了',dep)
             return value  // 返回值
         },
         set(newValue) {
@@ -74,6 +78,7 @@ function definedReactive(data, key, value) {
             if (newValue === value) return value
             observer(newValue)  // 如果用户设置的值是对象
             value = newValue
+            dep.notify()
         }
     })
 }

@@ -38,7 +38,7 @@
   // 传入参数对应着 Vue.options,mixin
   function mergeOptions(parent, child) {
     //{}  child:就是 Mixin中的  created
-    console.log(parent, child);
+    // console.log(parent,child)
     // Vue.options = {created: [a,b,c],watch:[a,b]}  Vue.mixin({created:f a()})
     var options = {};
     // 如果有父亲，没有儿子
@@ -60,7 +60,7 @@
         options[key] = child[key];
       }
     }
-    console.log(options);
+    // console.log(options)
     return options;
   }
 
@@ -503,6 +503,80 @@
     };
   });
 
+  var id = 0;
+  var watcher = /*#__PURE__*/function () {
+    function watcher(vm, updataComponent, cb, options) {
+      _classCallCheck(this, watcher);
+      this.vm = vm;
+      this.exprOrfn = updataComponent;
+      this.cb = cb;
+      this.options = options;
+      this.id = id++;
+      // 判断
+      if (typeof updataComponent === 'function') {
+        this.getter = updataComponent; // 更新视图方法赋值给getter
+      }
+      // 更新视图
+      this.get();
+    }
+    //  初次渲染
+    _createClass(watcher, [{
+      key: "get",
+      value: function get() {
+        pushTarget(this); //给dep 添加watcher
+        this.getter(); // 渲染页面  vm._updata(vm._render())  _s(msg)  vm.msg
+        popTarget(); // 给dep 取消 watcher
+      }
+      // 更新
+    }, {
+      key: "updata",
+      value: function updata() {
+        this.getter();
+      }
+    }]);
+    return watcher;
+  }();
+
+  //TODO: 收集依赖  vue：dep watcher data: {name,msg}
+
+  // dep: dep和data中的属性是一一对应的
+  // watcher: 在视图上用几个，就有几个watcher
+  // dep与watcher：一对多  dep.name = [w1,w2]
+
+  //实现对象的收集依赖
+
+  var Dep = /*#__PURE__*/function () {
+    function Dep() {
+      _classCallCheck(this, Dep);
+      this.subs = [];
+    }
+    // 收集watcher
+    _createClass(Dep, [{
+      key: "depend",
+      value: function depend() {
+        this.subs.push(Dep.target);
+      }
+      // 更新watcher
+    }, {
+      key: "notify",
+      value: function notify() {
+        this.subs.forEach(function (watcher) {
+          watcher.updata();
+        });
+      }
+    }]);
+    return Dep;
+  }();
+  Dep.target = null;
+
+  //* 添加watcher
+  function pushTarget(watcher) {
+    Dep.target = watcher;
+  }
+  function popTarget() {
+    Dep.target = null;
+  }
+
   function observer(data) {
     // console.log(data)
 
@@ -572,10 +646,15 @@
   }(); // 对 对象中的属性进行劫持
   function definedReactive(data, key, value) {
     observer(value); // 深度代理
+    var dep = new Dep(); //给每一个属性添加一个dep
     Object.defineProperty(data, key, {
       // 获取的时候触发
       get: function get() {
-        // console.log('获取的时候触发')
+        // 收集依赖 watcher
+        if (Dep.target) {
+          dep.depend();
+        }
+        console.log('依赖收集到了', dep);
         return value; // 返回值
       },
       set: function set(newValue) {
@@ -583,6 +662,7 @@
         if (newValue === value) return value;
         observer(newValue); // 如果用户设置的值是对象
         value = newValue;
+        dep.notify();
       }
     });
   }
@@ -697,18 +777,27 @@
    *           -> 通过render函数变成vnode -> vnode变成真实dom -> 放到页面
    */
 
-  // 组件挂载，进行渲染
+  //* 组件挂载，进行渲染
   function mountCoponent(vm, el) {
     // TODO: 是组件挂载到页面之前执行的，它提供了一个修改组件数据或者DOM的机会
     callHook(vm, "beforeMount");
+
     // (1)vm._render 将render函数 变成虚拟DOM (2)vm._updata 将虚拟DOM 变成真实DOM
-    //  经过update方法，Vue将组件的虚拟DOM渲染成真实的DOM，并挂载到页面上
-    vm._updata(vm._render());
+    // 经过update方法，Vue将组件的虚拟DOM渲染成真实的DOM，并挂载到页面上
+
+    //TODO:  手动更新视图版本
+    // vm._updata(vm._render())   
+
+    //TODO: 自动更新视图版本
+    var updataComponent = function updataComponent() {
+      vm._updata(vm._render());
+    };
+    new watcher(vm, updataComponent, function () {}, true); // true:渲染标识
     // TODO: mounted钩子，VUE2将虚拟DOM 渲染成真实的DOM，并将组件挂载到页面上
     callHook(vm, "mounted");
   }
 
-  // 生命周期初始化
+  //* 生命周期初始化
   function lifecycleMixin(Vue) {
     // _updata 将虚拟DOM变成真实DOM
     Vue.prototype._updata = function (vnode) {
@@ -717,12 +806,13 @@
       // console.log(vm.$el)
       // 此处传入两个参数  (1) 旧的dom (2) vnode
       vm.$el = patch(vm.$el, vnode);
+      console.log(vm.$el);
     };
   }
 
   // （1）render() 函数 -> vnode -> 真实dom 
 
-  // 生命周期调用
+  //* 生命周期调用
   function callHook(vm, hook) {
     var handlers = vm.$options[hook];
     if (handlers) {

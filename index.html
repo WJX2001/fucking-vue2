@@ -39,20 +39,20 @@
                     arr:[{a:1}]
                 }
             },
-            created() {
-                console.log(555)
-            }
+            created() {    //TODO: 生命周期就是一个函数的调用，先在vue中订阅好，后续会触发此方法
+                console.log(555)   
+            }  // 内部原理，将我们的生命周期组合成一个数组[created1,created2]
         })
-        //  .$mount('#app')
-        // console.log(vm)
-        // get 方法测试
-        // console.log(vm._data)
-        // set 方法测试
-        // console.log(vm._data.a={c:30})
-        // 数组测试
-        // console.log(vm._data.list.push(10))
-        // console.log(vm._data.arr.push({b:6}))
-        // console.log(vm.msg)
+        setTimeout(() => {
+            vm.msg = "张三"
+            // TODO: 视图更新
+            // vm._updata(vm._render()) 获取到vm实例上的数据   vm._updata 更新页面
+        },1000)
+        // 问题 自动更新
+        // 1.数据变化，自动更新视图  vm._updata(vm._render())
+        // 2.vue中更新组件的策略，以组件为单位，给每一个组件添加一个watcher,属性变化后，调用这个watcher
+
+
         
         // TODO: vue 初次渲染流程：先初始化数据 -> 将模版进行编译 -> 变成render() -> 生成虚拟节点 -> 生成真实的dom -> 放到页面上
 
@@ -65,7 +65,8 @@
               * (1) Vue.Mixin({})  // 混入
               * (2) 设计模式 订阅发布  vue  options: {data:[],watch:[]}
              */
-            //*
+        
+        // TODO: 实现对象的收集依赖
     </script>
 </body>
 </html>
