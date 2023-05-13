@@ -11,6 +11,7 @@
         hello {{ msg }} 
         <h2>张三 {{ name }}</h2> 
         <h2>{{list}} </h2>
+        <h2>{{arr}} </h2>
     </div>
     <script src="dist/vue.js"></script>
     <script>
@@ -51,10 +52,11 @@
         setTimeout(() => {
             vm.msg = "张三"
             vm.list.push(4)
+            vm.arr.push({b:1})
             // TODO: 视图更新
             // vm._updata(vm._render()) 获取到vm实例上的数据   vm._updata 更新页面
         },1000)
-        // 问题 自动更新
+        // 问题 自动更新 需要收集依赖
         // 1.数据变化，自动更新视图  vm._updata(vm._render())
         // 2.vue中更新组件的策略，以组件为单位，给每一个组件添加一个watcher,属性变化后，调用这个watcher
 
@@ -84,6 +86,15 @@
          *   2.1) 需要获取到当前的dep 
          *   2.2) 当前面对数组取值的时候，我们就让数组的dep记住这个watcher
          * 3）我们更新数组的时候调用 push, set 等等方法，找到我们的watch 进行更新
+        */
+
+        // TODO: 阶段小结
+        /** 
+         * 1. 收集依赖：实现自动更新(vm._updata(vm._render()))
+         * 2. 创建watcher类，进行扩展
+         * 3. data 和 dep 的关系   dep 和 watcher的关系
+         *   3.1 data的属性和dep 是一一对应的关系（data中多少个属性 就有多少个dep）
+         *   3.2 dep 和 watcher 关系 多对多 联系后面的计算属性
         */
     </script>
 </body>

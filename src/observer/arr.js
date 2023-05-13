@@ -45,7 +45,6 @@ methods.forEach(item => {
         let ob = this.__ob__ 
         if(inserted){
             ob.observerArray(inserted) // 对我们添加的对象进行劫持
-            
         }
         ob.dep.notify()
         return result

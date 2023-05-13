@@ -19,7 +19,7 @@ class Observer {
         Object.defineProperty(value, "__ob__", {
             enumerable: false,  // 指定属性是否可枚举
             value: this,        // 属性的值，将this设置为当前实例
-            configurable:false
+            configurable:false  // 控制属性描述符是否能改变
         })
 
         // 给我们的对象所有对象类型添加一个dep []
