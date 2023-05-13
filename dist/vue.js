@@ -331,9 +331,9 @@
     // 获取文本
     // console.log(text, '文本内容部分')
     // 去掉空格
-    text = text.replace(/a/g, ''); // /a 表示空格 /g表示全部 /a/g表示全部空格 
+    // text = text.replace(/a/g,'')  // /a 表示空格 /g表示全部 /a/g表示全部空格 
     // 去掉空格 写法II
-    // text = text.split(' ').join('')
+    text = text.split(' ').join('');
     if (text) {
       createParent.children.push({
         type: 3,
@@ -499,6 +499,7 @@
         ob.observerArray(inserted); // 对我们添加的对象进行劫持
       }
 
+      ob.dep.notify();
       return result;
     };
   });
@@ -564,11 +565,17 @@
       // 给 data 定义一个属性
       Object.defineProperty(value, "__ob__", {
         enumerable: false,
-        value: this
+        // 指定属性是否可枚举
+        value: this,
+        // 属性的值，将this设置为当前实例
+        configurable: false
       });
 
-      // console.log(value)
+      // 给我们的对象所有对象类型添加一个dep []
+      this.dep = new Dep();
+
       // 判断数据是数组还是对象
+      // console.log(value)
       if (Array.isArray(value)) {
         // 处理数组
         // 将value的原型指向ArrayMethods
@@ -615,16 +622,20 @@
     return Observer;
   }(); // 对 对象中的属性进行劫持
   function definedReactive(data, key, value) {
-    observer(value); // 深度代理
+    var childDep = observer(value); // 深度代理
     var dep = new Dep(); //给每一个属性添加一个dep
     Object.defineProperty(data, key, {
       // 获取的时候触发
       get: function get() {
         // 收集依赖 watcher
+        // console.log(childDep)
         if (Dep.target) {
           dep.depend();
+          if (childDep.dep) {
+            childDep.dep.depend(); //数组收集
+          }
         }
-        console.log('依赖收集到了', dep);
+        // console.log('依赖收集到了',dep)
         return value; // 返回值
       },
       set: function set(newValue) {

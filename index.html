@@ -7,7 +7,11 @@
     <title>Document</title>
 </head>
 <body>
-    <div id="app" style="color: red;font-size: 20px;"> hello {{ msg }} <h2>张三 {{ msg }}</h2> </div>
+    <div id="app" style="color: red;font-size: 20px;"> 
+        hello {{ msg }} 
+        <h2>张三 {{ name }}</h2> 
+        <h2>{{list}} </h2>
+    </div>
     <script src="dist/vue.js"></script>
     <script>
         // 因为用了 umd,所以在window上有个Vue
@@ -34,6 +38,7 @@
             data() {
                 return {
                     msg:'sb',
+                    name:{sex:'男'},
                     a:{b:20},
                     list:[1,2,3],
                     arr:[{a:1}]
@@ -45,6 +50,7 @@
         })
         setTimeout(() => {
             vm.msg = "张三"
+            vm.list.push(4)
             // TODO: 视图更新
             // vm._updata(vm._render()) 获取到vm实例上的数据   vm._updata 更新页面
         },1000)
@@ -69,6 +75,16 @@
         // TODO: 实现对象的收集依赖
 
         // TODO: dep和watcher 关系 多对多
+
+        // TODO: 数组收集   
+        /** 
+         * 思路：
+         * 1）我们要给所有对象类型增加一个dep  []
+         * 2) 获取数组的值，会调用get方法 我们希望让当前数组记住这个渲染的watcher
+         *   2.1) 需要获取到当前的dep 
+         *   2.2) 当前面对数组取值的时候，我们就让数组的dep记住这个watcher
+         * 3）我们更新数组的时候调用 push, set 等等方法，找到我们的watch 进行更新
+        */
     </script>
 </body>
 </html>
